@@ -1,0 +1,12 @@
+# Blender 4.5.2 LTS MTL File: 'tripo_df574756-36b6-4b01-9e41-73b3c0f9c3cc.blend'
+# www.blender.org
+
+newmtl tripo_mat_df574756-36b6-4b01-9e41-73b3c0f9c3cc
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd cartelnuevo_basecolor.JPEG
