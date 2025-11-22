@@ -777,7 +777,7 @@ void Animation(GLfloat deltaTime) {
 		mummyLegRot = 0.0f;
 	}
 	// --------------------------------------------
-
+	//prueba de repositorio en GitHub
 
 	if (animSarcofago)
 	{
