@@ -54,7 +54,6 @@ glm::vec3 pointLightPositions[] = {
 };
 
 float vertices[] = {
-	// ... (Vértices del cubo, sin cambios) ...
 	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 	   0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 	   0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
@@ -103,40 +102,59 @@ float vertices[] = {
 glm::vec3 Light1 = glm::vec3(0);
 
 // --- Variables Animación Momia/Sarcófago ---
-bool animMummy = false;      // Controla si la animación está activa
-float mummyLegRot = 0.0f;    // Rotación actual de las piernas/brazos
-bool mummyStep = false;      // Controla la dirección del paso
-glm::vec3 mummyPos = glm::vec3(37.0f, 2.8f, 0.0f); // Posición inicial de la momia (ANIMADA)
-float mummyRot = 270.0f;      // Rotación inicial de la momia
+bool animMummy = false;
+float mummyLegRot = 0.0f;
+bool mummyStep = false;
+glm::vec3 mummyPos = glm::vec3(37.0f, 2.8f, 0.0f);
+float mummyRot = 270.0f;
 
-const float MUMMY_SCALE_MIN = 1.0f; // Escala pequeña (dentro del sarcófago)
-const float MUMMY_SCALE_MAX = 1.4f; // Escala normal (fuera)
-float mummyScale = MUMMY_SCALE_MIN; // Escala actual (empieza pequeña)
+const float MUMMY_SCALE_MIN = 1.0f;
+const float MUMMY_SCALE_MAX = 1.4f;
+float mummyScale = MUMMY_SCALE_MIN;
 
-
-
-bool animSarcofago = false;   // Controla si la animación *general* está activa
-glm::vec3 sarcofagoPos = glm::vec3(37.0f, 2.8f, 0.0f); // Posición FIJA del sarcófago
-float tapaPosCerrado = 0.0f;  // Posición X CERRADA (relativa al punto de inicio)
-float tapaPosAbierto = 0.5f;  // Posición X ABIERTA (0.5 unidades a la DERECHA)
-float tapaPosX = tapaPosCerrado; // Posición X actual (empieza CERRADA)
+bool animSarcofago = false;
+glm::vec3 sarcofagoPos = glm::vec3(37.0f, 2.8f, 0.0f);
+float tapaPosCerrado = 0.0f;
+float tapaPosAbierto = 0.5f;
+float tapaPosX = tapaPosCerrado;
 float tapaAnimSpeed = 0.0002f;
-float tapaPosBaseZ = 0.2f;      // Posición Z base (la que tenías en Draw)
-float tapaLevitateAmount = 0.3f; // Cuánto se eleva/adelanta (ej. 0.3 unidades)
-float tapaPosZ = tapaPosBaseZ;  // Posición Z actual (empieza en la base)
+float tapaPosBaseZ = 0.2f;
+float tapaLevitateAmount = 0.3f;
+float tapaPosZ = tapaPosBaseZ;
 float tapaShakeAmount = 0.008f;
 
 
-int animState = 0;             // 0=idle, 1=opening, 2=walk_fwd, 3=wave, 4=walk_back, 5=closing
-float mummyMoveSpeed = 0.001f; // Velocidad de caminata
-float mummyWalkTargetDist = 1.0f; // Cuánto camina (ej. 1.0 unidad "3 pasos")
-float mummyWalkDistance = 0.0f;   // Cuánto ha caminado
-float stateTimer = 0.0f;       // Timer para el estado de saludo
-float mummyArmRot = 0.0f;      // Rotación del brazo para saludar (AHORA NO SE USA)
-float mummyArmSpeed = 1.0f;    // Velocidad del saludo 
-float mummyArmMaxAngle = 90.0f; // Ángulo del saludo 
+int animState = 0;
+float mummyMoveSpeed = 0.001f;
+float mummyWalkTargetDist = 1.0f;
+float mummyWalkDistance = 0.0f;
+float stateTimer = 0.0f;
+float mummyArmRot = 0.0f;
+float mummyArmSpeed = 1.0f;
+float mummyArmMaxAngle = 90.0f;
 bool mummyArmWavingUp = true;
 
+
+// --- Variables Animación Perro ---
+bool animDog = false; // Activado con tecla P
+
+// Posición inicial: Esquina inferior derecha
+// X=18, Y=3 (altura), Z=-18
+glm::vec3 dogPos = glm::vec3(18.0f, 3.0f, -18.0f);
+
+float dogRotBody = 0.0f;
+
+float dogTailRot = 0.0f;
+float dogHeadRot = 0.0f;
+float dogFLegLRot = 0.0f;
+float dogFLegRRot = 0.0f;
+float dogBLegLRot = 0.0f;
+float dogBLegRRot = 0.0f;
+
+// VARIABLES DE CONTROL DE TRAYECTORIA
+int dogPathState = 0;       // 0=Subir, 1=Izquierda, 2=Bajar, 3=Derecha
+float dogWalkSpeed = 0.05f; // Velocidad de caminata del perro
+// -----------------------------------
 
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
@@ -146,12 +164,6 @@ int main()
 {
 	// Init GLFW
 	glfwInit();
-	// Set all the required options for GLFW
-	/*glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);*/
 
 	// Create a GLFWwindow object that we can use for GLFW's functions
 	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Proyecto Final Museo", nullptr, nullptr);
@@ -200,24 +212,35 @@ int main()
 	Shader skyboxshader("Shader/SkyBox.vs", "Shader/SkyBox.frag");
 
 
+	// ******************************************************
+	// **** CARGA DE MODELOS (SIEMPRE FUERA DEL WHILE) ******
+	// ******************************************************
+
 	// --- AÑADIR MODELOS DE LA MOMIA ---
 	Model MummyBody((char*)"Models/cuerpo.obj");
 	Model MummyArmL((char*)"Models/brazo_izq.obj");
 	Model MummyArmR((char*)"Models/brazo_der.obj");
 	Model MummyLegR((char*)"Models/pierna_der.obj");
 	Model MummyLegL((char*)"Models/pierna_izq.obj");
-	// ------------------------------------
 
 	// --- AÑADIR MODELO DEL SARCÓFAGO ---
 	Model Sarcofago((char*)"Models/sarcofago.obj");
 	Model TapaSarcofago((char*)"Models/tapa_sarcofago.obj");
-	// -----------------------------------
 
+	// --- AÑADIR MODELOS DEL PERRO ---
+	Model DogBody((char*)"Models/DogBody.obj");
+	Model HeadDog((char*)"Models/HeadDog.obj");
+	Model DogTail((char*)"Models/TailDog.obj");
+	Model F_RightLeg((char*)"Models/F_RightLegDog.obj");
+	Model F_LeftLeg((char*)"Models/F_LeftLegDog.obj");
+	Model B_RightLeg((char*)"Models/B_RightLegDog.obj");
+	Model B_LeftLeg((char*)"Models/B_LeftLegDog.obj");
 
+	// --- MODELO MUSEO ---
 	Model SalaEgipcia((char*)"Models/museo.obj");
 
+	// ******************************************************
 
-	// Model BancoModel((char*)"Models/banco.obj");     
 
 	GLfloat skyboxVertices[] = {
 		// Positions
@@ -327,7 +350,8 @@ int main()
 	GLuint cubemapTexture = TextureLoading::LoadCubemap(faces);
 
 
-	glm::mat4 projection = glm::perspective(camera.GetZoom(), (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 100.0f);
+	// *** DISTANCIA VISIÓN A 1000.0f (Arreglo del Skybox cortado) ***
+	glm::mat4 projection = glm::perspective(camera.GetZoom(), (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
 
 
 	// Game loop
@@ -342,7 +366,7 @@ int main()
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		glfwPollEvents();
 		DoMovement();
-		Animation(deltaTime); // <-- Pasa deltaTime a la animación
+		Animation(deltaTime);
 
 		// Clear the colorbuffer
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -353,7 +377,8 @@ int main()
 
 
 		glm::mat4 modelTemp = glm::mat4(1.0f); //Temp
-		glm::mat4 sarcofagoModelTemp = glm::mat4(1.0f); // Matriz TEMPORAL para el sarcófago
+		glm::mat4 sarcofagoModelTemp = glm::mat4(1.0f);
+		glm::mat4 dogModelTemp = glm::mat4(1.0f); //Temp para el perro
 
 		// Use cooresponding shader when setting uniforms/drawing objects
 		lightingShader.Use();
@@ -365,7 +390,6 @@ int main()
 		glUniform3f(viewPosLoc, camera.GetPosition().x, camera.GetPosition().y, camera.GetPosition().z);
 
 
-		// ... (Toda la configuración de luces queda igual) ...
 		// Directional light
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.direction"), -0.2f, -1.0f, -0.3f);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "dirLight.ambient"), 0.6f, 0.6f, 0.6f);
@@ -425,173 +449,178 @@ int main()
 
 		//museo
 		model = glm::mat4(1); // Matriz identidad para la sala
-		// Puedes descomentar y ajustar la escala o posición si es necesario:
-		model = glm::translate(model, glm::vec3(-5.0f, 0.0f, -2.0f)); // Ejemplo de traslación
-		// model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f)); // Ejemplo de escala
+		model = glm::translate(model, glm::vec3(-5.0f, 0.0f, -2.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 0); // Asegurarse que no es transparente
+		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 0);
 		SalaEgipcia.Draw(lightingShader);
 
 
-
-
-		// --- DIBUJAR BANCO (BLOQUE COMENTADO) ---
-		/*
-		// 1. Empezar con la matriz de la sala
-		glm::mat4 bancoModel = glm::mat4(1);
-
-		// 2. Aplicar transformaciones LOCALES (DENTRO de la sala)
-
-		//    a) Moverlo a la derecha (X=3.0) y al fondo (Z=-3.0)
-		bancoModel = glm::translate(bancoModel, glm::vec3(33.0f, 1.0f, -3.0f));
-		//    b) Escalarlo para que se vea (¡Importante!)
-		bancoModel = glm::scale(bancoModel, glm::vec3(3.5f, 3.5f, 3.5f));
-
-		// 3. Dibujar el banco con su matriz final
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(bancoModel));
-		BancoModel.Draw(lightingShader);
-		*/
-		// --- FIN DIBUJO BANCO ---
-
-
+		// ==========================================
+		// ========== DIBUJADO DE LA MOMIA ==========
+		// ==========================================
 
 		sarcofagoModelTemp = glm::mat4(1);
 		sarcofagoModelTemp = glm::translate(sarcofagoModelTemp, sarcofagoPos);
 		sarcofagoModelTemp = glm::rotate(sarcofagoModelTemp, glm::radians(mummyRot), glm::vec3(0.0f, 1.0f, 0.0f));
 
-
-
 		model = glm::mat4(1); // Reiniciar matriz
 
 		// 1. Aplicar transformaciones base (Posición y Rotación)
-		//    ¡Ahora se usa la variable animada mummyPos!
 		model = glm::translate(model, mummyPos);
 		model = glm::rotate(model, glm::radians(mummyRot), glm::vec3(0.0f, 1.0f, 0.0f));
-
-
-		// Se aplica aquí para que afecte a todas las partes del cuerpo por igual.
 		model = glm::scale(model, glm::vec3(mummyScale, mummyScale, mummyScale));
-		// -------------------------------------
 
-		// Guardar esta matriz base (la del cuerpo)
-		modelTemp = model;
+		modelTemp = model; // Guardar matriz base cuerpo
 
-		// 2. Dibujar el Cuerpo
-		// Este es tu centro.
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		MummyBody.Draw(lightingShader);
 
-		// 3. Dibujar Pierna Izquierda (POSICIONADA)
-		model = modelTemp; // Volver a la pos del cuerpo
-		// (Valores para moverla abajo y a la izquierda)
+		// Pierna Izquierda
+		model = modelTemp;
 		model = glm::translate(model, glm::vec3(0.08f, -0.9f, 0.09f));
 		model = glm::rotate(model, glm::radians(mummyLegRot), glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		MummyLegL.Draw(lightingShader);
 
-		// 4. Dibujar Pierna Derecha (POSICIONADA)
-		model = modelTemp; // Volver a la pos del cuerpo
-		// (Valores para moverla abajo y a la derecha)
+		// Pierna Derecha
+		model = modelTemp;
 		model = glm::translate(model, glm::vec3(-0.1f, -0.9f, 0.0f));
 		model = glm::rotate(model, glm::radians(-mummyLegRot), glm::vec3(1.0f, 0.0f, 0.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		MummyLegR.Draw(lightingShader);
 
 
-		// 5. Dibujar Brazo Izquierdo (POSICIONADO)
-		model = modelTemp; // Volver a la pos del cuerpo
-		// ** Ajusta este '0.0f' a '0.1f' o '0.2f' si quieres subir los brazos **
-		model = glm::translate(model, glm::vec3(0.24f, 0.15f, 0.0f)); // Mover al hombro izquierdo
+		// Brazo Izquierdo
+		model = modelTemp;
+		model = glm::translate(model, glm::vec3(0.24f, 0.15f, 0.0f));
 
 		float leftArmXRot = 0.0f;
 		float leftArmYRot = 0.0f;
 
-		if (animState == 2 || animState == 3) // CAMINANDO AFUERA o SALUDANDO
+		if (animState == 2 || animState == 3)
 		{
-			leftArmXRot = -90.0f; // Brazo estirado al frente
+			leftArmXRot = -90.0f;
 			leftArmYRot = 0.0f;
 		}
-
-		// Ahora el estado 4 (caminando de regreso) usa la pose cruzada
-		else // QUIETO (0, 1, 5) O CAMINANDO DE REGRESO (4) - ¡POSE CRUZADA!
+		else
 		{
-			leftArmXRot = -75.0f; // Rotar hacia adelante (casi 90)
-			leftArmYRot = 35.0f;  // Rotar hacia adentro (cruzado)
+			leftArmXRot = -75.0f;
+			leftArmYRot = 35.0f;
 		}
 
-		// APLICAR ROTACIONES
-		model = glm::rotate(model, glm::radians(leftArmXRot), glm::vec3(1.0f, 0.0f, 0.0f)); // Adelante/Atrás
-		model = glm::rotate(model, glm::radians(leftArmYRot), glm::vec3(0.0f, 1.0f, 0.0f)); // Cruzar
-
-		model = glm::scale(model, glm::vec3(0.6f, 0.6f, 0.6f)); // Escala (se mantiene 0.6f)
+		model = glm::rotate(model, glm::radians(leftArmXRot), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(leftArmYRot), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.6f, 0.6f, 0.6f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		MummyArmL.Draw(lightingShader);
 
-		// 6. Dibujar Brazo Derecho (POSICIONADO)
-
-		model = modelTemp; // Volver a la pos del cuerpo
-		// ** Ajusta este '0.0f' a '0.1f' o '0.2f' si quieres subir los brazos **
-		model = glm::translate(model, glm::vec3(-0.24f, 0.15f, 0.0f)); // Mover al hombro derecho
+		// Brazo Derecho
+		model = modelTemp;
+		model = glm::translate(model, glm::vec3(-0.24f, 0.15f, 0.0f));
 
 		float rightArmXRot = 0.0f;
 		float rightArmYRot = 0.0f;
 
-		if (animState == 2 || animState == 3) // CAMINANDO AFUERA o SALUDANDO
+		if (animState == 2 || animState == 3)
 		{
-			rightArmXRot = -90.0f; // Brazo estirado al frente
+			rightArmXRot = -90.0f;
 			rightArmYRot = 0.0f;
 		}
-
-		// Ahora el estado 4 (caminando de regreso) usa la pose cruzada
-		else // QUIETO (0, 1, 5) O CAMINANDO DE REGRESO (4) - ¡POSE CRUZADA!
+		else
 		{
-			rightArmXRot = -75.0f; // Rotar hacia adelante (casi 90)
-			rightArmYRot = -35.0f; // Rotar hacia adentro (cruzado) - opuesto al izquierdo
+			rightArmXRot = -75.0f;
+			rightArmYRot = -35.0f;
 		}
 
-		// APLICAR ROTACIONES
-		model = glm::rotate(model, glm::radians(rightArmXRot), glm::vec3(1.0f, 0.0f, 0.0f)); // Adelante/Atrás
-		model = glm::rotate(model, glm::radians(rightArmYRot), glm::vec3(0.0f, 1.0f, 0.0f)); // Cruzar
-
-		model = glm::scale(model, glm::vec3(0.6f, 0.6f, 0.6f)); // Escala (se mantiene 0.6f)
+		model = glm::rotate(model, glm::radians(rightArmXRot), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(rightArmYRot), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.6f, 0.6f, 0.6f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		MummyArmR.Draw(lightingShader);
 
-
+		// Sarcofago Cuerpo
 		model = sarcofagoModelTemp;
-
 		model = glm::scale(model, glm::vec3(3.5f, 3.5f, 3.5f));
 		model = glm::translate(model, glm::vec3(0.0f, -0.1f, 0.0f));
-
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		Sarcofago.Draw(lightingShader);
 
-
-		float shakeOffsetY = 0.0f; // Por defecto no tiembla
-		// Solo tiembla si está abriendo (1) o cerrando (5)
+		// Sarcofago Tapa
+		float shakeOffsetY = 0.0f;
 		if (animState == 1 || animState == 5)
 		{
-
 			shakeOffsetY = sinf(currentFrame * 10.0f) * tapaShakeAmount;
 		}
 
-
-
-
 		model = sarcofagoModelTemp;
-
-		// Aplicamos LA MISMA escala
 		model = glm::scale(model, glm::vec3(3.5f, 3.5f, 3.5f));
-
-
-		// Aplicamos la traslación Y (vertical) fija + el TEMBLOR (shakeOffsetY)
-		// la traslación X animada (tapaPosX)
-		// y la traslación Z animada de levitación (tapaPosZ)
 		model = glm::translate(model, glm::vec3(tapaPosX, -0.1f + shakeOffsetY, tapaPosZ));
-		// -------------------------------------
-
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		TapaSarcofago.Draw(lightingShader);
+
+
+		// ==========================================
+		// ========== DIBUJADO DEL PERRO ============
+		// ==========================================
+
+		model = glm::mat4(1);
+		//Body Dog
+		model = glm::translate(model, dogPos); // Posición dinámica
+		model = glm::rotate(model, glm::radians(dogRotBody), glm::vec3(0.0f, 1.0f, 0.0f));
+
+		// === ESCALA DEL PERRO (8.0f) ===
+		model = glm::scale(model, glm::vec3(2.0f));
+		// ===============================
+
+		// Guardamos la matriz del cuerpo del perro
+		dogModelTemp = model;
+
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		DogBody.Draw(lightingShader);
+
+		//Head Dog
+		model = dogModelTemp;
+		model = glm::translate(model, glm::vec3(0.0f, 0.093f, 0.208f));
+		model = glm::rotate(model, glm::radians(dogHeadRot), glm::vec3(0.0f, 0.0f, 1.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		HeadDog.Draw(lightingShader);
+
+		//Tail Dog
+		model = dogModelTemp;
+		model = glm::translate(model, glm::vec3(0.0f, 0.026f, -0.288f));
+		model = glm::rotate(model, glm::radians(dogTailRot), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotar en Y para mover cola izq/der
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		DogTail.Draw(lightingShader);
+
+		//Front Left Leg
+		model = dogModelTemp;
+		model = glm::translate(model, glm::vec3(0.112f, -0.044f, 0.074f));
+		model = glm::rotate(model, glm::radians(dogFLegLRot), glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		F_LeftLeg.Draw(lightingShader);
+
+		//Front Right Leg
+		model = dogModelTemp;
+		model = glm::translate(model, glm::vec3(-0.111f, -0.055f, 0.074f));
+		model = glm::rotate(model, glm::radians(dogFLegRRot), glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		F_RightLeg.Draw(lightingShader);
+
+		//Back Left Leg
+		model = dogModelTemp;
+		model = glm::translate(model, glm::vec3(0.082f, -0.046, -0.218));
+		model = glm::rotate(model, glm::radians(dogBLegLRot), glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		B_LeftLeg.Draw(lightingShader);
+
+		//Back Right Leg
+		model = dogModelTemp;
+		model = glm::translate(model, glm::vec3(-0.083f, -0.057f, -0.231f));
+		model = glm::rotate(model, glm::radians(dogBLegRRot), glm::vec3(1.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		B_RightLeg.Draw(lightingShader);
+
+		// ==========================================
 
 
 		//Draw SkyBox
@@ -723,24 +752,28 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 		}
 	}
 
-	// --- AÑADIR TECLA M PARA LA MOMIA ---
+	// --- TECLA M PARA LA MOMIA ---
 	if (key == GLFW_KEY_M && action == GLFW_PRESS)
 	{
-		animMummy = !animMummy; // Esto sigue funcionando para la animación de caminar simple
+		animMummy = !animMummy;
 	}
-	// -------------------------------------
 
-	// --- AÑADIR TECLA N PARA EL SARCÓFAGO ---
+
+	// --- TECLA N PARA EL SARCÓFAGO ---
 	if (key == GLFW_KEY_N && action == GLFW_PRESS)
 	{
-		// Solo inicia la secuencia si está en estado IDLE (0)
 		if (animState == 0)
 		{
-			animSarcofago = true; // Activa la animación general
-			animState = 1;        // Pasa al primer estado (Abrir tapa)
+			animSarcofago = true;
+			animState = 1;
 		}
 	}
-	// ----------------------------------------
+
+	// --- TECLA P PARA EL PERRO (TOGGLE ANIMATION) ---
+	if (key == GLFW_KEY_P && action == GLFW_PRESS)
+	{
+		animDog = !animDog;
+	}
 
 }
 
@@ -748,155 +781,179 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 void Animation(GLfloat deltaTime) {
 
 
-	// Esta lógica se activa solo cuando animMummy es true
+	// --- ANIMACION MOMIA ---
 	if (animMummy)
 	{
 
-		float animSpeed = 0.02f; // Velocidad de la pierna (antes 0.05f)
-		float maxAngle = 40.0f;  // Ángulo del paso 
+		float animSpeed = 0.02f;
+		float maxAngle = 40.0f;
 
 		if (!mummyStep) {
 			mummyLegRot += animSpeed;
 			if (mummyLegRot > maxAngle) {
-				mummyLegRot = maxAngle; // Corregido para que no se pase
+				mummyLegRot = maxAngle;
 				mummyStep = true;
 			}
 		}
 		else {
 			mummyLegRot -= animSpeed;
-			if (mummyLegRot < -maxAngle) { // Esta es la forma correcta
-				mummyLegRot = -maxAngle; // Corregido para que no se pase
+			if (mummyLegRot < -maxAngle) {
+				mummyLegRot = -maxAngle;
 				mummyStep = false;
 			}
 		}
 	}
 	else
 	{
-		// Si no está animada, volver a la posición de reposo
-		// (Los brazos se controlan en main)
 		mummyLegRot = 0.0f;
 	}
-	// --------------------------------------------
-	//prueba de repositorio en GitHub
+
+	// --- ANIMACION PERRO (CUADRADO) ---
+	if (animDog)
+	{
+		// 1. Animación de patas y cola
+		float time = glfwGetTime();
+		float speed = 10.0f;
+
+		dogTailRot = sin(time * 15.0f) * 20.0f;
+		dogFLegLRot = sin(time * speed) * 30.0f;
+		dogFLegRRot = sin(time * speed + 3.14f) * 30.0f;
+		dogBLegLRot = sin(time * speed + 1.0f) * 30.0f;
+		dogBLegRRot = sin(time * speed + 4.14f) * 30.0f;
+
+
+		// 2. Máquina de Estados: ROTACIONES CORREGIDAS (INVERTIDAS)
+		// Ahora el perro mirará hacia adelante en lugar de ir en reversa.
+
+		switch (dogPathState)
+		{
+		case 0: // Mover hacia +Z (Hacia abajo en pantalla)
+			dogPos.z += dogWalkSpeed;
+			dogRotBody = 0.0f; // Corregido
+			if (dogPos.z >= 5.0f) dogPathState = 1;
+			break;
+
+		case 1: // Mover hacia -X (Izquierda)
+			dogPos.x -= dogWalkSpeed;
+			dogRotBody = 270.0f; // Corregido
+			if (dogPos.x <= -5.0f) dogPathState = 2;
+			break;
+
+		case 2: // Mover hacia -Z (Hacia arriba en pantalla)
+			dogPos.z -= dogWalkSpeed;
+			dogRotBody = 180.0f; // Corregido
+			if (dogPos.z <= -18.0f) dogPathState = 3;
+			break;
+
+		case 3: // Mover hacia +X (Derecha)
+			dogPos.x += dogWalkSpeed;
+			dogRotBody = 90.0f; // Corregido
+			if (dogPos.x >= 18.0f) dogPathState = 0;
+			break;
+		}
+
+	}
+	else
+	{
+		// Resetear perro a pose estatica
+		dogTailRot = 0.0f;
+		dogFLegLRot = 0.0f;
+		dogFLegRRot = 0.0f;
+		dogBLegLRot = 0.0f;
+		dogBLegRRot = 0.0f;
+	}
+
+
+	// --- ANIMACION SARCOFAGO ---
 
 	if (animSarcofago)
 	{
-		// Variable para el ratio de apertura/cierre (0.0 a 1.0)
 		float ratio = 0.0f;
 
 		switch (animState)
 		{
-		case 1: // Estado 1: Abriendo Tapa (MOVER A LA DERECHA)
-			tapaPosX += tapaAnimSpeed; // Mover hacia la derecha (AHORA MÁS LENTO)
-
-			// --- LÓGICA DE LEVITACIÓN (EJE Z) ---
-			// Calcula qué tan "abierto" está (de 0.0 a 1.0)
+		case 1: // Abrir Tapa
+			tapaPosX += tapaAnimSpeed;
 			ratio = tapaPosX / tapaPosAbierto;
-			// Usa sin() para que suba y baje. (sin(0) = 0, sin(PI/2) = 1, sin(PI) = 0)
-			// 3.14159f es el valor de PI
 			tapaPosZ = tapaPosBaseZ + (sinf(ratio * 3.14159f) * tapaLevitateAmount);
-			// --------------------------------------------
 
-			if (tapaPosX > tapaPosAbierto) // Comprobar si llegó al punto ABIERTO
+			if (tapaPosX > tapaPosAbierto)
 			{
-				tapaPosX = tapaPosAbierto; // Asegurar que no se pase
-				tapaPosZ = tapaPosBaseZ;   // Asegurar que vuelve a la base Z
-				animState = 2;             // Siguiente estado: caminar adelante
-				animMummy = true;          // Activar animación de caminar
+				tapaPosX = tapaPosAbierto;
+				tapaPosZ = tapaPosBaseZ;
+				animState = 2;
+				animMummy = true;
 			}
 			break;
 
-		case 2: // Estado 2: Momia caminando hacia adelante
+		case 2: // Momia caminando adelante
 		{
-
-			// Moverse "hacia adelante" relativo a la rotación de la momia
 			mummyPos.x += sinf(glm::radians(mummyRot)) * mummyMoveSpeed;
 			mummyPos.z += cosf(glm::radians(mummyRot)) * mummyMoveSpeed;
+			mummyWalkDistance += mummyMoveSpeed;
 
-			mummyWalkDistance += mummyMoveSpeed; // Acumular la distancia caminada
-
-
-			// Interpolar la escala basada en la distancia caminada
-			float walkRatio = mummyWalkDistance / mummyWalkTargetDist; // Sube de 0.0 a 1.0
+			float walkRatio = mummyWalkDistance / mummyWalkTargetDist;
 			mummyScale = MUMMY_SCALE_MIN + (walkRatio * (MUMMY_SCALE_MAX - MUMMY_SCALE_MIN));
-			if (mummyScale > MUMMY_SCALE_MAX) mummyScale = MUMMY_SCALE_MAX; // Asegurar límite
-			// ------------------------------------
+			if (mummyScale > MUMMY_SCALE_MAX) mummyScale = MUMMY_SCALE_MAX;
 
-			if (mummyWalkDistance > mummyWalkTargetDist) // Comprobar si llegó al objetivo
+			if (mummyWalkDistance > mummyWalkTargetDist)
 			{
-				mummyScale = MUMMY_SCALE_MAX; // Asegurar que termina en escala MÁXIMA
-				animState = 3;               // Siguiente estado: saludar
-				animMummy = false;             // Detener animación de caminar (piernas)
+				mummyScale = MUMMY_SCALE_MAX;
+				animState = 3;
+				animMummy = false;
 				stateTimer = 0.0f;
 			}
 		}
 		break;
 
-		case 3: // Estado 3: Momia en pausa (brazos estirados)
-			stateTimer += deltaTime; // Incrementar el temporizador
-
-
-
-			// Espera por 3 segundos
+		case 3: // Pausa
+			stateTimer += deltaTime;
 			if (stateTimer > 3.0f)
 			{
-				animState = 4;       // Siguiente estado: caminar atrás
-				animMummy = true;    // Activar animación de caminar (piernas)
-				mummyArmRot = 0.0f;  // Resetear brazo (por si acaso)
+				animState = 4;
+				animMummy = true;
+				mummyArmRot = 0.0f;
 			}
 			break;
 
-		case 4: // Estado 4: Momia caminando hacia atrás
+		case 4: // Momia caminando atrás
 		{
-
-			// Moverse "hacia atrás" relativo a la rotación
 			mummyPos.x -= sinf(glm::radians(mummyRot)) * mummyMoveSpeed;
-			// **** LÍNEA CRÍTICA CORREGIDA ****
-			// Se eliminó el typo "mSarcófago" y se añadió el ')' faltante
 			mummyPos.z -= cosf(glm::radians(mummyRot)) * mummyMoveSpeed;
 
-			mummyWalkDistance -= mummyMoveSpeed; // Reducir la distancia caminada
+			mummyWalkDistance -= mummyMoveSpeed;
 
-
-			// Interpolar la escala basada en la distancia (ahora baja de 1.0 a 0.0)
 			float walkRatioBack = mummyWalkDistance / mummyWalkTargetDist;
 			mummyScale = MUMMY_SCALE_MIN + (walkRatioBack * (MUMMY_SCALE_MAX - MUMMY_SCALE_MIN));
-			if (mummyScale < MUMMY_SCALE_MIN) mummyScale = MUMMY_SCALE_MIN; // Asegurar límite
-			// ---------------------------------------
-
+			if (mummyScale < MUMMY_SCALE_MIN) mummyScale = MUMMY_SCALE_MIN;
 
 			if (mummyWalkDistance < 0.0f)
 			{
 				mummyWalkDistance = 0.0f;
-				mummyPos = sarcofagoPos; // Resetear la momia a la pos original
-				mummyScale = MUMMY_SCALE_MIN; // ¡NUEVO! Resetear escala a pequeña
-				animState = 5;         // Siguiente estado: cerrar tapa
-				animMummy = false;     // Detener animación de caminar (piernas)
+				mummyPos = sarcofagoPos;
+				mummyScale = MUMMY_SCALE_MIN;
+				animState = 5;
+				animMummy = false;
 			}
 		}
 		break;
 
-		case 5: // Estado 5: Cerrando Tapa (MOVER A LA IZQUIERDA)
-			tapaPosX -= tapaAnimSpeed; // Mover hacia la izquierda 
+		case 5: // Cerrando Tapa
+			tapaPosX -= tapaAnimSpeed;
 
-			// --- LÓGICA DE LEVITACIÓN (EJE Z) ---
-			// Calcula qué tan "abierto" está (de 1.0 a 0.0)
 			ratio = tapaPosX / tapaPosAbierto;
-			// Usa sin() para que suba y baje. (sin(PI) = 0, sin(PI/2) = 1, sin(0) = 0)
 			tapaPosZ = tapaPosBaseZ + (sinf(ratio * 3.14159f) * tapaLevitateAmount);
-			// ---------------------------------------------
 
-			if (tapaPosX < tapaPosCerrado) // Comprobar si llegó al punto CERRADO
+			if (tapaPosX < tapaPosCerrado)
 			{
-				tapaPosX = tapaPosCerrado; // Asegurar que no se pase
-				tapaPosZ = tapaPosBaseZ;   // Asegurar que vuelve a la base Z
-				animState = 0;             // Volver al estado IDLE
-				animSarcofago = false;     // Terminar la secuencia
+				tapaPosX = tapaPosCerrado;
+				tapaPosZ = tapaPosBaseZ;
+				animState = 0;
+				animSarcofago = false;
 			}
 			break;
 		}
 	}
-	// -----------------------------------------------
 
 }
 
@@ -906,16 +963,16 @@ void MouseCallback(GLFWwindow* window, double xPos, double yPos)
 {
 	if (firstMouse)
 	{
-		lastX = (GLfloat)xPos; // <--- Cast a GLfloat
-		lastY = (GLfloat)yPos; // <--- Cast a GLfloat
+		lastX = (GLfloat)xPos;
+		lastY = (GLfloat)yPos;
 		firstMouse = false;
 	}
 
-	GLfloat xOffset = (GLfloat)xPos - lastX; // <--- Cast a GLfloat
-	GLfloat yOffset = lastY - (GLfloat)yPos;  // <--- Cast a GLfloat
+	GLfloat xOffset = (GLfloat)xPos - lastX;
+	GLfloat yOffset = lastY - (GLfloat)yPos;
 
-	lastX = (GLfloat)xPos; // <--- Cast a GLfloat
-	lastY = (GLfloat)yPos; // <--- Cast a GLfloat
+	lastX = (GLfloat)xPos;
+	lastY = (GLfloat)yPos;
 
 	camera.ProcessMouseMovement(xOffset, yOffset);
 }
