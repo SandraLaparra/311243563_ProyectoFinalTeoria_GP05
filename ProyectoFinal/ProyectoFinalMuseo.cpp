@@ -1,3 +1,8 @@
+//Proyecto - 2 Final
+//Autor: 311243563
+//Fecha de entrega: 25 de noviembre de 2025
+
+
 #include <iostream>
 #include <cmath> 
 
@@ -101,7 +106,7 @@ float vertices[] = {
 
 glm::vec3 Light1 = glm::vec3(0);
 
-// --- Variables Animación Momia/Sarcófago ---
+//Variables Animación Momia/Sarcófago
 bool animMummy = false;
 float mummyLegRot = 0.0f;
 bool mummyStep = false;
@@ -135,11 +140,10 @@ float mummyArmMaxAngle = 90.0f;
 bool mummyArmWavingUp = true;
 
 
-// --- Variables Animación Perro ---
+//Variables Animación Perro
 bool animDog = false; // Activado con tecla P
 
-// Posición inicial: Esquina inferior derecha
-// X=18, Y=3 (altura), Z=-18
+//Posición inicial del perro
 glm::vec3 dogPos = glm::vec3(18.0f, 3.0f, -18.0f);
 
 float dogRotBody = 0.0f;
@@ -151,10 +155,10 @@ float dogFLegRRot = 0.0f;
 float dogBLegLRot = 0.0f;
 float dogBLegRRot = 0.0f;
 
-// VARIABLES DE CONTROL DE TRAYECTORIA
+//Variables de control de trayectoria
 int dogPathState = 0;       // 0=Subir, 1=Izquierda, 2=Bajar, 3=Derecha
-float dogWalkSpeed = 0.05f; // Velocidad de caminata del perro
-// -----------------------------------
+float dogWalkSpeed = 0.05f; // Velocidad con la que camina el perro
+
 
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
@@ -166,7 +170,7 @@ int main()
 	glfwInit();
 
 	// Create a GLFWwindow object that we can use for GLFW's functions
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Proyecto Final Museo", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Proyecto 2 - Final", nullptr, nullptr);
 
 	if (nullptr == window)
 	{
@@ -212,22 +216,20 @@ int main()
 	Shader skyboxshader("Shader/SkyBox.vs", "Shader/SkyBox.frag");
 
 
-	// ******************************************************
-	// **** CARGA DE MODELOS (SIEMPRE FUERA DEL WHILE) ******
-	// ******************************************************
+	//Carga de Modelos
 
-	// --- AÑADIR MODELOS DE LA MOMIA ---
+	// Momia
 	Model MummyBody((char*)"Models/cuerpo.obj");
 	Model MummyArmL((char*)"Models/brazo_izq.obj");
 	Model MummyArmR((char*)"Models/brazo_der.obj");
 	Model MummyLegR((char*)"Models/pierna_der.obj");
 	Model MummyLegL((char*)"Models/pierna_izq.obj");
 
-	// --- AÑADIR MODELO DEL SARCÓFAGO ---
+	// Sarcófago
 	Model Sarcofago((char*)"Models/sarcofago.obj");
 	Model TapaSarcofago((char*)"Models/tapa_sarcofago.obj");
 
-	// --- AÑADIR MODELOS DEL PERRO ---
+	// Perro
 	Model DogBody((char*)"Models/DogBody.obj");
 	Model HeadDog((char*)"Models/HeadDog.obj");
 	Model DogTail((char*)"Models/TailDog.obj");
@@ -236,10 +238,9 @@ int main()
 	Model B_RightLeg((char*)"Models/B_RightLegDog.obj");
 	Model B_LeftLeg((char*)"Models/B_LeftLegDog.obj");
 
-	// --- MODELO MUSEO ---
+	// Museo
 	Model SalaEgipcia((char*)"Models/museo.obj");
 
-	// ******************************************************
 
 
 	GLfloat skyboxVertices[] = {
@@ -350,7 +351,6 @@ int main()
 	GLuint cubemapTexture = TextureLoading::LoadCubemap(faces);
 
 
-	// *** DISTANCIA VISIÓN A 1000.0f (Arreglo del Skybox cortado) ***
 	glm::mat4 projection = glm::perspective(camera.GetZoom(), (GLfloat)SCREEN_WIDTH / (GLfloat)SCREEN_HEIGHT, 0.1f, 1000.0f);
 
 
@@ -446,7 +446,6 @@ int main()
 		glm::mat4 model(1);
 
 
-
 		//museo
 		model = glm::mat4(1); // Matriz identidad para la sala
 		model = glm::translate(model, glm::vec3(-5.0f, 0.0f, -2.0f));
@@ -455,9 +454,7 @@ int main()
 		SalaEgipcia.Draw(lightingShader);
 
 
-		// ==========================================
-		// ========== DIBUJADO DE LA MOMIA ==========
-		// ==========================================
+		// Dibujo de la momia
 
 		sarcofagoModelTemp = glm::mat4(1);
 		sarcofagoModelTemp = glm::translate(sarcofagoModelTemp, sarcofagoPos);
@@ -465,7 +462,7 @@ int main()
 
 		model = glm::mat4(1); // Reiniciar matriz
 
-		// 1. Aplicar transformaciones base (Posición y Rotación)
+		// Aplicar transformaciones base (Posición y Rotación)
 		model = glm::translate(model, mummyPos);
 		model = glm::rotate(model, glm::radians(mummyRot), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(mummyScale, mummyScale, mummyScale));
@@ -559,20 +556,16 @@ int main()
 		TapaSarcofago.Draw(lightingShader);
 
 
-		// ==========================================
-		// ========== DIBUJADO DEL PERRO ============
-		// ==========================================
+		// Dibujo del perro
 
 		model = glm::mat4(1);
 		//Body Dog
 		model = glm::translate(model, dogPos); // Posición dinámica
 		model = glm::rotate(model, glm::radians(dogRotBody), glm::vec3(0.0f, 1.0f, 0.0f));
-
-		// === ESCALA DEL PERRO (8.0f) ===
 		model = glm::scale(model, glm::vec3(2.0f));
-		// ===============================
+		
 
-		// Guardamos la matriz del cuerpo del perro
+		// Matriz del cuerpo del perro
 		dogModelTemp = model;
 
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -620,7 +613,6 @@ int main()
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		B_RightLeg.Draw(lightingShader);
 
-		// ==========================================
 
 
 		//Draw SkyBox
@@ -752,14 +744,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 		}
 	}
 
-	// --- TECLA M PARA LA MOMIA ---
+	// TECLA M PARA LA MOMIA 
 	if (key == GLFW_KEY_M && action == GLFW_PRESS)
 	{
 		animMummy = !animMummy;
 	}
 
 
-	// --- TECLA N PARA EL SARCÓFAGO ---
+	// TECLA N PARA EL SARCÓFAGO 
 	if (key == GLFW_KEY_N && action == GLFW_PRESS)
 	{
 		if (animState == 0)
@@ -769,7 +761,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 		}
 	}
 
-	// --- TECLA P PARA EL PERRO (TOGGLE ANIMATION) ---
+	// TECLA P PARA EL PERRO 
 	if (key == GLFW_KEY_P && action == GLFW_PRESS)
 	{
 		animDog = !animDog;
@@ -781,7 +773,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 void Animation(GLfloat deltaTime) {
 
 
-	// --- ANIMACION MOMIA ---
+	// ANIMACION MOMIA
 	if (animMummy)
 	{
 
@@ -808,10 +800,10 @@ void Animation(GLfloat deltaTime) {
 		mummyLegRot = 0.0f;
 	}
 
-	// --- ANIMACION PERRO (CUADRADO) ---
+	// ANIMACION PERRO 
 	if (animDog)
 	{
-		// 1. Animación de patas y cola
+		// Animación de patas y cola
 		float time = glfwGetTime();
 		float speed = 10.0f;
 
@@ -822,32 +814,31 @@ void Animation(GLfloat deltaTime) {
 		dogBLegRRot = sin(time * speed + 4.14f) * 30.0f;
 
 
-		// 2. Máquina de Estados: ROTACIONES CORREGIDAS (INVERTIDAS)
-		// Ahora el perro mirará hacia adelante en lugar de ir en reversa.
+		// Máquina de Estados
 
 		switch (dogPathState)
 		{
 		case 0: // Mover hacia +Z (Hacia abajo en pantalla)
 			dogPos.z += dogWalkSpeed;
-			dogRotBody = 0.0f; // Corregido
+			dogRotBody = 0.0f; 
 			if (dogPos.z >= 5.0f) dogPathState = 1;
 			break;
 
 		case 1: // Mover hacia -X (Izquierda)
 			dogPos.x -= dogWalkSpeed;
-			dogRotBody = 270.0f; // Corregido
+			dogRotBody = 270.0f; 
 			if (dogPos.x <= -5.0f) dogPathState = 2;
 			break;
 
 		case 2: // Mover hacia -Z (Hacia arriba en pantalla)
 			dogPos.z -= dogWalkSpeed;
-			dogRotBody = 180.0f; // Corregido
+			dogRotBody = 180.0f; 
 			if (dogPos.z <= -18.0f) dogPathState = 3;
 			break;
 
 		case 3: // Mover hacia +X (Derecha)
 			dogPos.x += dogWalkSpeed;
-			dogRotBody = 90.0f; // Corregido
+			dogRotBody = 90.0f; 
 			if (dogPos.x >= 18.0f) dogPathState = 0;
 			break;
 		}
@@ -864,7 +855,7 @@ void Animation(GLfloat deltaTime) {
 	}
 
 
-	// --- ANIMACION SARCOFAGO ---
+	// ANIMACION SARCOFAGO
 
 	if (animSarcofago)
 	{
